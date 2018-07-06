@@ -76,9 +76,9 @@ class PodcastButlerSkill(MycroftSkill):
             LOG.info("Starting at " + str(playback_position) + " for [" + episode.guid + "] " + episode.title)
 
             if playback_position > 0:
-                self.speak("Okay continuing where you left off in episode, " + episode.title)
+                self.speak_dialog("resume", {"episode_title": episode.title})
             else:
-                self.speak("Okay, playing " + episode.title)
+                self.speak_dialog("playing",  {"episode_title": episode.title})
 
             wait_while_speaking()
             self.player = vlc.MediaPlayer(episode.enclosure_url)
@@ -99,7 +99,7 @@ class PodcastButlerSkill(MycroftSkill):
         if self.player is not None:
             self.player.set_pause(0)
         else:
-            self.speak("There is no podcast to resume playing")
+            self.speak_dialog("no.podcast.action", {"action": "resume playing"})
 
     def stop_playback(self):
         if self.player is not None:
@@ -145,7 +145,7 @@ class PodcastButlerSkill(MycroftSkill):
     @intent_file_handler('listen.intent')
     def handle_listen_intent(self, message):
         if 'show' not in message.data:
-            self.speak("I'm not sure what you're looking for. Try something like, Listen to podcast this american life");
+            self.speak_dialog("not.sure");
             return
 
         show = message.data["show"]
@@ -158,7 +158,7 @@ class PodcastButlerSkill(MycroftSkill):
                 episode = podcast.get_episode(0)
             self.play_episode(podcast, episode)
         else:
-            self.speak("I couldn't find a podcast named "+show)
+            self.speak_dialog("no.podcast.found", {"show": show})
 
     @intent_file_handler('episode.next.intent')
     def handle_episode_next_intent(self, message):
@@ -169,7 +169,7 @@ class PodcastButlerSkill(MycroftSkill):
         elif self.current_podcast is not None:
             podcast = self.current_podcast
         else:
-            self.speak("I don't know which podcast to play the next episode for")
+            self.speak_dialog("no.podcast.action", {"action": "play the next episode for"})
             return
 
         recent_episode = self.load_podcast_recent_episode(podcast)
@@ -181,7 +181,7 @@ class PodcastButlerSkill(MycroftSkill):
                 next_idx = episode_idx+1
                 next_episode = podcast.items[next_idx]
             except KeyError:
-                self.speak("There are no more episodes to play")
+                self.speak_dialog("no.episodes")
                 return
         self.play_episode(podcast, next_episode)
 
@@ -194,7 +194,7 @@ class PodcastButlerSkill(MycroftSkill):
         elif self.current_podcast is not None:
             podcast = self.current_podcast
         else:
-            self.speak("I don't know which podcast to play the previous episode for")
+            self.speak_dialog("no.podcast.action", {"action": "play the previous episode for"})
             return
 
         recent_episode = self.load_podcast_recent_episode(podcast)
@@ -206,7 +206,7 @@ class PodcastButlerSkill(MycroftSkill):
                 prev_idx = episode_idx - 1
                 prev_episode = podcast.items[prev_idx]
             except KeyError:
-                self.speak("You are already at the first episode")
+                self.speak_dialog("no.episodes.first")
                 return
         self.play_episode(podcast, prev_episode)
 
