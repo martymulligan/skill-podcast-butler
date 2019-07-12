@@ -1,2 +1,2 @@
-podcast butler listen (to| ) {show}
-podcast butler play {show}
+listen (to| ) (the|) (podcast|) {show}
+play (the|) (podcast|) {show}

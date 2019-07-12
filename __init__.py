@@ -11,9 +11,6 @@ import vlc
 __author__ = 'martymulligan'
 
 
-# The logic of each skill is contained within its own class, which inherits
-# base methods from the MycroftSkill class with the syntax you can see below:
-# "class ____Skill(MycroftSkill)"
 class PodcastButlerSkill(MycroftSkill):
 
     # The constructor of the skill, which calls MycroftSkill's constructor
@@ -105,6 +102,9 @@ class PodcastButlerSkill(MycroftSkill):
         if self.player is not None:
             self.save_playback_state()
             self.player.stop()
+            return True
+        else:
+            return False
 
     ######################################################################
     # Handle auto ducking when listener is started.
@@ -141,6 +141,32 @@ class PodcastButlerSkill(MycroftSkill):
             self.idle_count = 0
 
     ######################################################################
+    # ###
+    # ### Intent Handlers
+    # ###
+
+    @intent_file_handler('list.intent')
+    def handle_list_intent(self, message):
+        if 'show' not in message.data:
+            if self.current_podcast is None:
+                self.speak_dialog("not.sure");
+                return
+            else:
+                podcast = self.current_podcast
+        else:
+            show = message.data["show"]
+            podcast = PodcastButler().find_podcast(show)
+
+        show = podcast.title
+        LOG.info(podcast.__dict__)
+        count = len(podcast.items) if len(podcast.items) < 5 else 5
+        episodes = ""
+        for i in range(0, count):
+            episodes += str(i+1) + ", " + podcast.items[i].title + ". "
+        self.speak_dialog("episode.list", {"show": show, "episodes": episodes})
+        self.speak("That is all")
+
+        LOG.info(message.data)
 
     @intent_file_handler('listen.intent')
     def handle_listen_intent(self, message):
@@ -149,8 +175,7 @@ class PodcastButlerSkill(MycroftSkill):
             return
 
         show = message.data["show"]
-        pb = PodcastButler()
-        podcast = pb.find_podcast(show)
+        podcast = PodcastButler().find_podcast(show)
 
         if podcast is not None:
             episode = self.load_podcast_recent_episode(podcast)
@@ -218,10 +243,7 @@ class PodcastButlerSkill(MycroftSkill):
     def handle_resume_intent(self, message):
         self.resume_playback()
 
-    # The "stop" method defines what Mycroft does when told to stop during
-    # the skill's execution. In this case, since the skill's functionality
-    # is extremely simple, the method just contains the keyword "pass", which
-    # does nothing.
+
     def stop(self):
         self.stop_playback()
 

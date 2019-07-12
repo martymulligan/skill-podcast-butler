@@ -11,6 +11,7 @@ class PodcastButler:
     #     pprint.pprint(res)
 
     def find_podcast(self, show):
+        podcast = None
         params = {
             "attribute": "titleTerm",
             "term": show,
@@ -20,10 +21,10 @@ class PodcastButler:
         url = 'https://itunes.apple.com/search?'+params
         response = requests.get(url)
         json = response.json()
-        result = json['results'][0];
-        feed_url = result['feedUrl']
-
-        podcast = PodcastButlerPodcast(feed_url)
+        if len(json['results']) > 0:
+          result = json['results'][0];
+          feed_url = result['feedUrl']
+          podcast = PodcastButlerPodcast(feed_url)
         return podcast
 
 
