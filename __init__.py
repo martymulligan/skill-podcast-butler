@@ -2,7 +2,7 @@ from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import LOG
 from mycroft import intent_file_handler
 from mycroft.audio import wait_while_speaking
-import mycroft.client.enclosure.display_manager as DisplayManager
+import mycroft.enclosure.display_manager as DisplayManager
 from .PodcastButler import PodcastButler
 import vlc
 
@@ -21,9 +21,9 @@ class PodcastButlerSkill(MycroftSkill):
         MycroftSkill.__init__(self)
         self.ducking = False
         self.idle_count = 0
+        self.player = None
 
     def initialize(self):
-        self.player = None
         self.reset_now_playing()
 
     def pb(self):
