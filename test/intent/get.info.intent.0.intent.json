@@ -1,0 +1,8 @@
+{
+    "expected_dialog": "podcast.info",
+    "intent": {
+        "show": "on the media"
+    },
+    "intent_type": "get.info.intent",
+    "utterance": "tell me about the on the media podcast"
+}

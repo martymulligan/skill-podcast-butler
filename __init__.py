@@ -5,6 +5,8 @@ from mycroft.audio import wait_while_speaking
 import mycroft.enclosure.display_manager as DisplayManager
 from .PodcastButler import PodcastButler
 import vlc
+import datetime
+import pprint
 
 
 
@@ -168,6 +170,63 @@ class PodcastButlerSkill(MycroftSkill):
 
         LOG.info(message.data)
 
+    @intent_file_handler('get.info.intent')
+    def handle_list_intent(self, message):
+        if 'show' not in message.data:
+            if self.current_podcast is None:
+                self.speak_dialog("not.sure");
+                return
+            else:
+                podcast = self.current_podcast
+        else:
+            show = message.data["show"]
+            podcast = PodcastButler().find_podcast(show)
+
+        # LOG.info(podcast.__dict__)
+        count = len(podcast.items)
+        latest = podcast.get_episode(0)
+
+        days = {
+            1: "first",
+            2: "second",
+            3: "third",
+            4: "fourth",
+            5: "fifth",
+            6: "sixth",
+            7: "seventh",
+            8: "eighth",
+            9: "ninth",
+            10: "tenth",
+            11: "eleventh",
+            12: "twelfth",
+            13: "thirteenth",
+            14: "fourteenth",
+            15: "fifteenth",
+            16: "sixteenth",
+            17: "seventeenth",
+            18: "eighteenth",
+            19: "nineteenth",
+            20: "twentieth",
+            21: "twenty first",
+            22: "twenty second",
+            23: "twenty third",
+            24: "twenty fourth",
+            25: "twenty fifth",
+            26: "twenty sixth",
+            27: "twenty seventh",
+            28: "twenty eighth",
+            29: "twenty ninth",
+            30: "thirtieth",
+            31: "thirty first"
+        }
+        spoken_month = latest.date_time.strftime("%B")
+        spoken_day = days.get(int(latest.date_time.strftime("%d")), "")
+        spoken_year = latest.date_time.strftime("%Y")
+        pubdate =  "{} {} {}".format(spoken_month, spoken_day, spoken_year)
+
+        self.speak_dialog("podcast.info", {"podcast": podcast, "count": count, "pubdate": pubdate})
+
+
     @intent_file_handler('listen.intent')
     def handle_listen_intent(self, message):
         if 'show' not in message.data:
@@ -176,9 +235,12 @@ class PodcastButlerSkill(MycroftSkill):
 
         show = message.data["show"]
         podcast = PodcastButler().find_podcast(show)
+        utt = message.data.get('utterance') or ""
 
         if podcast is not None:
-            episode = self.load_podcast_recent_episode(podcast)
+            episode = None
+            if "latest episode" not in utt and "recent episode" not in utt:
+                episode = self.load_podcast_recent_episode(podcast)
             if episode is None:
                 episode = podcast.get_episode(0)
             self.play_episode(podcast, episode)
